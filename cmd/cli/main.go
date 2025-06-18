@@ -140,36 +140,51 @@ func SimultaneousLoadTest(server *machinery.Server, total int) {
 }
 
 func ComparisonTest(server *machinery.Server, total, problemIdx int, useBuilder bool) {
-
-	var wg sync.WaitGroup
-
-	testcaseTimes := [][]int{}
 	fmt.Println(total, problemIdx, useBuilder)
 
+	// channel to collect per‐task timings
+	resultsCh := make(chan []int, total)
+
+	var wg sync.WaitGroup
 	for i := 1; i <= total; i++ {
 		wg.Add(1)
 		go func(taskNum int) {
 			defer wg.Done()
 			fmt.Printf("[%d] Sending request...\n", taskNum)
+
 			accepted, result, duration := tests.TestBlackbox(server, useBuilder, problemIdx)
+			fmt.Printf("[%d] Finished: OK=%t, time=%s\n", taskNum, accepted, duration)
 
 			if accepted {
-				testcaseTime := []int{}
-				for _, tcRes := range result.TestcaseGradingResult {
-					testcaseTime = append(testcaseTime, tcRes.TimeToRunInMilliseconds)
+				// build the slice of per‐testcase times
+				times := make([]int, len(result.TestcaseGradingResult))
+				for j, tc := range result.TestcaseGradingResult {
+					times[j] = tc.TimeToRunInMilliseconds
 				}
-				testcaseTimes = append(testcaseTimes, testcaseTime)
+				// send it into the channel
+				resultsCh <- times
 			}
-
-			fmt.Printf("[%d] Finished: OK=%t, time=%s\n", taskNum, accepted, duration)
 		}(i)
 	}
 
+	// wait for all goroutines, then close the channel
 	wg.Wait()
+	close(resultsCh)
 
+	// drain channel into a slice
+	var testcaseTimes [][]int
+	for times := range resultsCh {
+		testcaseTimes = append(testcaseTimes, times)
+	}
+
+	if len(testcaseTimes) == 0 {
+		fmt.Println("No accepted results to aggregate.")
+		return
+	}
+
+	// compute column‐wise sums and means
 	cols := len(testcaseTimes[0])
 	sums := make([]int, cols)
-
 	for _, row := range testcaseTimes {
 		for i, val := range row {
 			sums[i] += val
@@ -182,9 +197,7 @@ func ComparisonTest(server *machinery.Server, total, problemIdx int, useBuilder 
 	}
 
 	fmt.Printf("%+v\n", testcaseTimes)
-
 	fmt.Println("Means:", means)
-
 }
 
 // SimulateRealCondition runs `numUsers` virtual users sending requests
