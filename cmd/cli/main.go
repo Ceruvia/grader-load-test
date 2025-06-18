@@ -140,9 +140,11 @@ func SimultaneousLoadTest(server *machinery.Server, total int) {
 }
 
 func ComparisonTest(server *machinery.Server, total, problemIdx int, useBuilder bool) {
+
 	var wg sync.WaitGroup
 
 	testcaseTimes := [][]int{}
+	fmt.Println(total, problemIdx, useBuilder)
 
 	for i := 1; i <= total; i++ {
 		wg.Add(1)
@@ -163,6 +165,8 @@ func ComparisonTest(server *machinery.Server, total, problemIdx int, useBuilder 
 		}(i)
 	}
 
+	wg.Wait()
+
 	cols := len(testcaseTimes[0])
 	sums := make([]int, cols)
 
@@ -177,9 +181,10 @@ func ComparisonTest(server *machinery.Server, total, problemIdx int, useBuilder 
 		means[i] = float64(sum) / float64(len(testcaseTimes))
 	}
 
+	fmt.Printf("%+v\n", testcaseTimes)
+
 	fmt.Println("Means:", means)
 
-	wg.Wait()
 }
 
 // SimulateRealCondition runs `numUsers` virtual users sending requests
