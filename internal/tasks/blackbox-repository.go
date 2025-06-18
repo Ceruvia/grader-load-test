@@ -48,9 +48,35 @@ var (
 			runScript:        "prog",
 			expectedResponse: createExpectedResult(true, "Success", "", []string{"AC", "AC", "AC", "AC", "AC", "AC", "WA", "AC", "WA", "WA"}),
 		},
+		{
+			id:               "java_1_inventory_management",
+			graderURL:        "https://pub-aa14e9fb26a94974a23c01cf74108727.r2.dev/java_1_inventory_management_grader.zip",
+			submissionURL:    "https://pub-aa14e9fb26a94974a23c01cf74108727.r2.dev/java_1_inventory_management_submission.zip",
+			inputTestcases:   createInputTestcases(5),
+			outputTestcases:  createOutputTestcases(5),
+			timeLimit:        1000,
+			memoryLimit:      10240,
+			language:         "Java",
+			compileScript:    "Main.class",
+			runScript:        "Main",
+			expectedResponse: createExpectedResult(true, "Success", "", []string{"AC", "AC", "AC", "AC", "AC"}),
+		},
 	}
 
-	LanguageSamples []SampleLanguageSubmission = []SampleLanguageSubmission{}
+	LanguageSamples []SampleLanguageSubmission = []SampleLanguageSubmission{
+		{
+			id:                 "python_1_representasi",
+			graderURL:          "https://pub-aa14e9fb26a94974a23c01cf74108727.r2.dev/python_1_representasi_grader.zip",
+			submissionURL:      "https://pub-aa14e9fb26a94974a23c01cf74108727.r2.dev/python_1_representasi_submission.zip",
+			inputTestcases:     createInputTestcases(10),
+			outputTestcases:    createOutputTestcases(10),
+			timeLimit:          1000,
+			memoryLimit:        10240,
+			language:           "Python 3",
+			mainSourceFilename: "unique_digit.py",
+			expectedResponse:   createExpectedResult(true, "Success", "", []string{"AC", "AC", "AC", "AC", "AC", "AC", "AC", "AC", "AC", "AC"}),
+		},
+	}
 )
 
 func createInputTestcases(count int) []string {
